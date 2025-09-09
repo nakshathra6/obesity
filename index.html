@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obesity Checker (KNN)</title>
+  <style>
+    /* Reset some default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #fc61f4, #9fd7ff);
+      color: #333;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px 30px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      color: #fff;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      width: 100%;
+      background: #ff6a00;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #ff3c00;
+      transform: scale(1.05);
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      min-height: 24px;
+    }
+
+    .result.obese {
+      color: #ff3c00;
+    }
+
+    .result.not-obese {
+      color: #00e676;
+    }
+
+    footer {
+      margin-top: 25px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>⚕️ Obesity Checker</h2>
+    <input type="number" id="height" placeholder="Enter Height (cm)" required>
+    <input type="number" id="weight" placeholder="Enter Weight (kg)" required>
+    <button onclick="checkObesity()">Check Now</button>
+
+    <div class="result" id="result"></div>
+
+    <footer>⚠️ Not a medical diagnosis</footer>
+  </div>
+
+  <script>
+    // Training dataset: [height, weight, label]
+    // label: 0 = Not Obese, 1 = Obese
+    const dataset = [
+      [160, 50, 0],
+      [165, 55, 0],
+      [170, 60, 0],
+      [160, 70, 1],
+      [165, 80, 1],
+      [170, 90, 1]
+    ];
+
+    const K = 3; // number of neighbors
+
+    function distance(p1, p2) {
+      let dx = p1[0] - p2[0];
+      let dy = p1[1] - p2[1];
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    function knnPredict(height, weight) {
+      let distances = dataset.map(point => {
+        return { 
+          dist: distance([height, weight], [point[0], point[1]]), 
+          label: point[2] 
+        };
+      });
+
+      distances.sort((a, b) => a.dist - b.dist);
+      let nearest = distances.slice(0, K);
+
+      let obeseCount = nearest.filter(n => n.label === 1).length;
+      let notObeseCount = K - obeseCount;
+
+      return obeseCount > notObeseCount ? "Obese" : "Not Obese";
+    }
+
+    function checkObesity() {
+      let height = parseFloat(document.getElementById("height").value);
+      let weight = parseFloat(document.getElementById("weight").value);
+      let resultDiv = document.getElementById("result");
+
+      if (isNaN(height) || isNaN(weight)) {
+        resultDiv.innerText = "⚠️ Please enter valid numbers.";
+        resultDiv.className = "result";
+        return;
+      }
+
+      let prediction = knnPredict(height, weight);
+      resultDiv.innerText = "Result: " + prediction;
+
+      if (prediction === "Obese") {
+        resultDiv.className = "result obese";
+      } else {
+        resultDiv.className = "result not-obese";
+      }
+    }
+  </script>
+</body>
+</html>
